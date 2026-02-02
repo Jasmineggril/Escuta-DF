@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
@@ -60,6 +61,21 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  log("🚀 Iniciando Sistema Escuta-DF...");
+
+  // Diagnóstico de Conexão no Boot
+  if (!process.env.DATABASE_URL) {
+    log("❌ ERRO CRÍTICO: DATABASE_URL não definida.", "SYSTEM");
+  } else {
+    log("✅ Banco de Dados Local: Configurado via Drizzle/Postgres.", "SYSTEM");
+  }
+
+  if (!process.env.VITE_SUPABASE_URL || !process.env.VITE_SUPABASE_ANON_KEY) {
+    log("⚠️ Supabase: Variáveis de ambiente CLIENT-SIDE ausentes no .env", "SYSTEM");
+  } else {
+    log("✅ Supabase: Variáveis de ambiente detectadas.", "SYSTEM");
+  }
+
   await registerRoutes(httpServer, app);
 
   app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
@@ -94,7 +110,6 @@ app.use((req, res, next) => {
     {
       port,
       host: "0.0.0.0",
-      reusePort: true,
     },
     () => {
       log(`serving on port ${port}`);
